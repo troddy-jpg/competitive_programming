@@ -2,35 +2,41 @@ use text_io::read;
 fn main() {
     let input_sets:usize = read!();
     for _ in 0..input_sets {
-        let (people_sizes, seat_sizes): (isize, isize) = (read!(), read!());
-        let (individual_people, mut individual_seats) = (usize_to_vec_of_isize(people_sizes), usize_to_vec_of_isize(seat_sizes));
-        
-        individual_seats.sort();
-        individual_seats.push(0);
-
-        for person in individual_people {
-            let next_seat = get_available_seat(&individual_seats, person);
-            individual_seats[next_seat] = individual_seats[next_seat] - person;
+        let (people_sizes, seat_sizes): (String, String) = (read!(), read!());
+        fn digitized(num:String) -> Vec<usize>  { 
+        num.chars()
+        .map(|x| x.to_digit(10).unwrap() as usize)
+        .collect()
         }
-        if individual_seats[individual_seats.len()-1] < 0 
-            {println!("Not gonna work.");}
-        else
-            {println!("This looks safe.");}
+        let ( mut people_digits, mut seat_digits) = (digitized(people_sizes), digitized(seat_sizes));
+        seat_digits.sort();
+        people_digits.sort();
+        // println!("{:?}, {:?}",people_digits, seat_digits);
+
+        fn can_fit_people(people: Vec<usize>, mut seats: Vec<usize>) -> bool {        
+            for person in people {
+                let mut fit = false;
+                for seat in seats.iter_mut() {
+                    if *seat >= person {
+                        *seat -= person;
+                        fit = true;
+                        break;
+                    }
+                }
+                if !fit {
+                    return false; // Person couldn't fit in any seat
+                }
+            }
+            true
+        }
+        if can_fit_people(people_digits, seat_digits) {
+            println!("This looks safe.");
+        }
+        else {println!("Not gonna work.");}
     }
 }
 
-fn usize_to_vec_of_isize(n: isize) -> Vec<isize> {
-    n.to_string()
-     .chars()
-     .map(|c| c.to_digit(9).unwrap() as isize)
-     .collect()
-}
-
-fn get_available_seat(seats: &Vec<isize>, person: isize) -> usize {
-    for curr_seat in 0..seats.len(){
-        if person <= seats[curr_seat]{ 
-            return curr_seat;
-        }
-    }
-    seats.len()-1
-}
+//sort seats l->g
+//fill smallest seat
+//go through persons l->g
+//
